@@ -3,16 +3,20 @@ const express = require('express');
 // import ApolloServer
 const { ApolloServer } = require('apollo-server-express');
 
+const { authMiddleware } = require('./utils/auth');
+
 // import our typeDefs and resolvers
 const { typeDefs, resolvers } = require('./schemas');
 const db = require('./config/connection'); //connection ro mongoose imported from this file
 
 const PORT = process.env.PORT || 3001;
 
-// create a new Apollo server and pass in our schema data
+// create a new Apollo server and pass in our schema data to the graphql documents
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  context: authMiddleware
+  //This would see the incoming request and return only the headers. On the resolver side, those headers would become the context parameter.
 });
 
 const app = express();
