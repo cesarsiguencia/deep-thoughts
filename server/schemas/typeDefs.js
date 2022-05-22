@@ -64,6 +64,7 @@ type Thought {
 // thoughts: [Thought]
 // for just one user, replace query definition
 // thoughts(username: String): [Thought]
+// THE ORDER OF THESE MATTER FOR IT TO WORK!!!
 module.exports = typeDefs;
 
 // const { gql } = require('apollo-server-express');

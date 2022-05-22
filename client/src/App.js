@@ -1,8 +1,12 @@
+import React from 'react';
+
 import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'; //for React to use the Apollo
+
+import { setContext } from '@apollo/client/link/context'; // retrieve from local storage function, creeates middleware function that will retrive the token for us and combine it with the existing httpLink
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import React from 'react';
+
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -20,9 +24,22 @@ const httpLink = createHttpLink({
   uri: '/graphql',
 });
 
-// create Apollo Client with the endpoint link, cache is optional
+// retrives session token from local storage, then with the http request headers, every request will include the token
+// the place holder _ in the arguements shows that we don't need the first item from authLink, justt headers with the second one.
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+// create Apollo Client with the endpoint link, cache is optional,
+//authLink is combined with httpLink so that every request retrieves the token and sets the request headers beforemaking the request to the API
 const client = new ApolloClient({
-  link: httpLink,
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
@@ -50,6 +67,10 @@ function App() {
               />
               <Route 
                 path="/profile/:username" 
+                element={<Profile />} 
+              />
+              <Route 
+                path="/profile" 
                 element={<Profile />} 
               />
               <Route 

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 
 // import ApolloServer
 const { ApolloServer } = require('apollo-server-express');
@@ -29,6 +30,16 @@ const startApolloServer = async (typeDefs, resolvers) => {
   await server.start();
   // integrate our Apollo server with the Express application as middleware
   server.applyMiddleware({ app });
+
+
+  // Serve up static assets for when in production, npm run build is only for production, use static from client build when production, in development, we use additonal dependencies, like noedmon, concurrently, so we don't need this during production
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/build')));
+  }
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
   
   db.once('open', () => {
       app.listen(PORT, () => {
