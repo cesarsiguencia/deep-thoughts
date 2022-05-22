@@ -1,7 +1,10 @@
 const express = require('express');
+const path = require('path');
 
 // import ApolloServer
 const { ApolloServer } = require('apollo-server-express');
+
+const { authMiddleware } = require('./utils/auth');
 
 // import our typeDefs and resolvers
 const { typeDefs, resolvers } = require('./schemas');
@@ -9,10 +12,12 @@ const db = require('./config/connection'); //connection ro mongoose imported fro
 
 const PORT = process.env.PORT || 3001;
 
-// create a new Apollo server and pass in our schema data
+// create a new Apollo server and pass in our schema data to the graphql documents
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  context: authMiddleware
+  //This would see the incoming request and return only the headers. On the resolver side, those headers would become the context parameter.
 });
 
 const app = express();
@@ -25,6 +30,16 @@ const startApolloServer = async (typeDefs, resolvers) => {
   await server.start();
   // integrate our Apollo server with the Express application as middleware
   server.applyMiddleware({ app });
+
+
+  // Serve up static assets for when in production, npm run build is only for production, use static from client build when production, in development, we use additonal dependencies, like noedmon, concurrently, so we don't need this during production
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/build')));
+  }
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
   
   db.once('open', () => {
       app.listen(PORT, () => {
