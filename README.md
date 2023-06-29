@@ -1,4 +1,4 @@
-# Deep Thoughts
+# Deep Thoughts MERN Stack by CS
 
 - - - - - - - - - - 
 NOTE FROM DEVELOPER:
